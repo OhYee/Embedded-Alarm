@@ -1,0 +1,3 @@
+".\Objects\time.obj" 
+TO ".\Objects\time" 
+PRINT(".\Listings\time.m51")

@@ -1,0 +1,366 @@
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE TIME
+OBJECT MODULE PLACED IN .\Objects\time.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE time.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\time
+                    -.lst) TABS(2) OBJECT(.\Objects\time.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          // define the port address
+   4          sbit PORT_1_0 = P1 ^ 0;
+   5          sbit PORT_1_1 = P1 ^ 1;
+   6          sbit PORT_1_2 = P1 ^ 2;
+   7          sbit PORT_1_3 = P1 ^ 3;
+   8          sbit PORT_1_4 = P1 ^ 4;
+   9          sbit PORT_1_5 = P1 ^ 5;
+  10          sbit PORT_1_6 = P1 ^ 6;
+  11          sbit PORT_1_7 = P1 ^ 7;
+  12          
+  13          //  digital screen
+  14          unsigned char code table[] = {
+  15              0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07,
+  16              0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71
+  17          };
+  18          
+  19          // wait
+  20          void DelayMs(unsigned char ms) {
+  21   1          unsigned int t;
+  22   1          while (ms--)
+  23   1              for (t = 0; t < 120; t++);
+  24   1      }
+  25          
+  26          // get the status of P1 port.
+  27          bit getStatus(unsigned int num) {
+  28   1          bit ret;
+  29   1          switch(num) {
+  30   2              case 0: ret = PORT_1_0; break;
+  31   2              case 1: ret = PORT_1_1; break;
+  32   2              case 2: ret = PORT_1_2; break;
+  33   2              case 3: ret = PORT_1_3; break;
+  34   2              case 4: ret = PORT_1_4; break;
+  35   2              case 5: ret = PORT_1_5; break;
+  36   2              case 6: ret = PORT_1_6; break;
+  37   2              case 7: ret = PORT_1_7; break;
+  38   2          }
+  39   1          return ret;
+  40   1      }
+  41          
+  42          // set the status of P1 port.
+  43          void setStatus(unsigned int num, bit value){
+  44   1          switch(num){
+  45   2              case 0: PORT_1_0 = value; break;
+  46   2              case 1: PORT_1_1 = value; break;
+  47   2              case 2: PORT_1_2 = value; break;
+  48   2              case 3: PORT_1_3 = value; break;
+  49   2              case 4: PORT_1_4 = value; break;
+  50   2              case 5: PORT_1_5 = value; break;
+  51   2              case 6: PORT_1_6 = value; break;
+  52   2              case 7: PORT_1_7 = value; break;
+  53   2          }
+  54   1      }
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 2   
+
+  55          
+  56          // judge if the key is clicked.
+  57          int keyPressing[8]={0,0,0,0,0,0,0,0};
+  58          int checkKey(unsigned int num) {
+  59   1          int keyDown = 0;
+  60   1          if(getStatus(num) == 1 && keyPressing[num] == 1)
+  61   1                  keyPressing[num] = 0;
+  62   1          if(getStatus(num) == 0 && keyPressing[num] == 0) {
+  63   2              DelayMs(10);
+  64   2              if(getStatus(num) == 0) {
+  65   3                  keyDown = 1;
+  66   3                  keyPressing[num] = 1;
+  67   3              }
+  68   2          }
+  69   1          return keyDown;
+  70   1      }
+  71          
+  72          // send data
+  73          void send(unsigned char sendData) {
+  74   1          SBUF = sendData;
+  75   1          while(!TI);
+  76   1          TI = 0;
+  77   1      }
+  78          
+  79          // recive data
+  80          void reciveWorker(unsigned char);
+  81          void reciveListener() interrupt 4 {
+  82   1          RI = 0;
+  83   1          reciveWorker(SBUF);
+  84   1      }
+  85          
+  86          
+  87          /***************/
+  88          int blind = 1;
+  89          void setSeg(int num, int idx){
+  90   1          P0 = (num & 0x0f)|(idx<<4)|(blind<<7);
+  91   1      }
+  92          
+  93          
+  94          typedef struct{
+  95              int hour,minute,second;
+  96              int showHour, showMinute, showSecond;
+  97          } Time;
+  98          
+  99          void setTime(Time *time, int hour, int minute, int second){
+ 100   1          time->hour = hour;
+ 101   1          time->minute = minute;
+ 102   1          time->second = second;
+ 103   1      }
+ 104          
+ 105          void setTimeFromTime(Time *time, Time *time2){
+ 106   1          time->hour = time2->hour;
+ 107   1          time->minute = time2->minute;
+ 108   1          time->second = time2->second;
+ 109   1      }
+ 110          
+ 111          void setTimeDisplay(Time *time, int hour, int minute, int second){
+ 112   1          time->showHour = hour;
+ 113   1          time->showMinute = minute;
+ 114   1          time->showSecond = second;
+ 115   1      }
+ 116          
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 3   
+
+ 117          int equalTime(Time time1, Time time2){
+ 118   1          if (time1.hour == time2.hour && time1.minute == time2.minute && time1.second == time2.second)
+ 119   1              return 1;
+ 120   1          else
+ 121   1              return 0;
+ 122   1      }
+ 123          
+ 124          void addTimeHour(Time *time){
+ 125   1          time->hour++;
+ 126   1          if(time->hour >= 24){
+ 127   2              time->hour = 0;
+ 128   2          }
+ 129   1      }
+ 130          void addTimeMinute(Time *time){
+ 131   1          time->minute++;
+ 132   1          if(time->minute >= 60){
+ 133   2              time->minute = 0;
+ 134   2              addTimeHour(time);
+ 135   2          }
+ 136   1      }
+ 137          void addTimeSecond(Time *time){
+ 138   1          time->second++;
+ 139   1          if(time->second >= 60){
+ 140   2              time->second = 0;
+ 141   2              addTimeMinute(time);
+ 142   2          }
+ 143   1      }
+ 144          
+ 145          
+ 146          
+ 147          void displayTime(Time time){
+ 148   1          if(time.showHour)
+ 149   1            setSeg(time.hour/10,0);
+ 150   1          DelayMs(5);
+ 151   1          if(time.showHour)
+ 152   1              setSeg(time.hour%10,1);
+ 153   1          DelayMs(5);
+ 154   1          if(time.showMinute)
+ 155   1              setSeg(time.minute/10,2);
+ 156   1          DelayMs(5);
+ 157   1          if(time.showMinute)
+ 158   1              setSeg(time.minute%10,3);
+ 159   1          DelayMs(5);
+ 160   1          if(time.showSecond)
+ 161   1              setSeg(time.second/10,4);
+ 162   1          DelayMs(5);
+ 163   1          if(time.showSecond)
+ 164   1              setSeg(time.second%10,5);
+ 165   1          DelayMs(5);
+ 166   1      }
+ 167          
+ 168          
+ 169          Time nowTime, alarmTime;
+ 170          Time *timePtr;
+ 171          
+ 172          int time2Int(int idx){
+ 173   1          return (__TIME__[idx*3]-'0')*10+(__TIME__[idx*3+1]-'0');
+ 174   1      }
+ 175          
+ 176          void init(){
+ 177   1          int i;
+ 178   1        
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 4   
+
+ 179   1          P0 = 0x00;
+ 180   1          SCON = 0x50;    // communication
+ 181   1          TMOD = 0x20;    // timer
+ 182   1          TH1 = 0xfd;
+ 183   1          TL1 = 0xfd;
+ 184   1          TR1 = 1;
+ 185   1          EA = 1;
+ 186   1          ES = 1;
+ 187   1          
+ 188   1          
+ 189   1          setTime(&nowTime,time2Int(0),time2Int(1),time2Int(2));
+ 190   1          setTimeDisplay(&nowTime,1,1,1);
+ 191   1          setTimeFromTime(&alarmTime,&nowTime);
+ 192   1          setTimeDisplay(&alarmTime,1,1,1);
+ 193   1          for(i=0;i<10;++i)
+ 194   1              addTimeSecond(&alarmTime);
+ 195   1        
+ 196   1          timePtr = &nowTime;
+ 197   1      }
+ 198          
+ 199          // solve the recive data
+ 200          void reciveWorker(unsigned char reciveData) {
+ 201   1      }
+*** WARNING C280 IN LINE 200 OF time.c: 'reciveData': unreferenced local variable
+ 202          
+ 203          
+ 204          
+ 205          // 1s
+ 206          void timeInc(){
+ 207   1          if(equalTime(nowTime,alarmTime))
+ 208   1              send(1);
+ 209   1          addTimeSecond(&nowTime);
+ 210   1          blind = ~blind;
+ 211   1      }
+ 212          
+ 213          
+ 214          bit alarm=0;
+ 215          bit edit=0;
+ 216          int editStatus=4;
+ 217          
+ 218          void timeDisplayUpdate(){
+ 219   1          if(edit) {
+ 220   2              setTimeDisplay(timePtr,editStatus&1,editStatus&2,editStatus&4);
+ 221   2          } else {
+ 222   2              setTimeDisplay(timePtr,1,1,1);
+ 223   2          }
+ 224   1      }
+ 225          
+ 226          void key0click(){
+ 227   1          alarm=~alarm;
+ 228   1          if(alarm)
+ 229   1              timePtr = &alarmTime;
+ 230   1          else
+ 231   1              timePtr = &nowTime;
+ 232   1          timeDisplayUpdate();
+ 233   1          
+ 234   1          setStatus(7,~alarm);
+ 235   1      }
+ 236          
+ 237          void key1click(){
+ 238   1          edit=~edit;
+ 239   1          editStatus=4;
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 5   
+
+ 240   1          timeDisplayUpdate();
+ 241   1          setStatus(6,~edit);
+ 242   1      }
+ 243          
+ 244          void key2click(){
+ 245   1          editStatus >>= 1;
+ 246   1          if(editStatus < 1)
+ 247   1              editStatus = 4;
+ 248   1          timeDisplayUpdate();
+ 249   1      }
+ 250          
+ 251          void key3click(){
+ 252   1          editStatus <<= 1;
+ 253   1          if(editStatus > 4)
+ 254   1              editStatus = 1;
+ 255   1          timeDisplayUpdate();
+ 256   1      }
+ 257          
+ 258          void key4click(){
+ 259   1          switch(editStatus){
+ 260   2            case 1:{
+ 261   3                addTimeHour(timePtr);
+ 262   3                break;
+ 263   3            }
+ 264   2            case 2:{
+ 265   3                addTimeMinute(timePtr);
+ 266   3                break;
+ 267   3            }
+ 268   2            case 4:{
+ 269   3                addTimeSecond(timePtr);
+ 270   3                break;
+ 271   3            }
+ 272   2          }
+ 273   1      }
+ 274          
+ 275          void key5click(){
+ 276   1          switch(editStatus){
+ 277   2            case 1:{
+ 278   3                timePtr->hour--;
+ 279   3                if(timePtr->hour == -1)
+ 280   3                    timePtr->hour = 23;
+ 281   3                break;
+ 282   3            }
+ 283   2            case 2:{
+ 284   3                timePtr->minute--;
+ 285   3                if(timePtr->minute == -1)
+ 286   3                    timePtr->minute = 59;
+ 287   3                break;
+ 288   3            }
+ 289   2            case 4:{
+ 290   3                timePtr->second--;
+ 291   3                if(timePtr->second == -1)
+ 292   3                    timePtr->second = 59;
+ 293   3                break;
+ 294   3            }
+ 295   2          }
+ 296   1      }
+ 297          
+ 298          void checkAllKey(){
+ 299   1          if(checkKey(0))
+ 300   1              key0click();
+ 301   1          if(checkKey(1))
+C51 COMPILER V9.56.0.0   TIME                                                              06/02/2018 20:36:29 PAGE 6   
+
+ 302   1              key1click();
+ 303   1          if(checkKey(2))
+ 304   1              key2click();
+ 305   1          if(checkKey(3))
+ 306   1              key3click();
+ 307   1          if(checkKey(4))
+ 308   1              key4click();
+ 309   1          if(checkKey(5))
+ 310   1              key5click();
+ 311   1      }
+ 312          
+ 313          
+ 314          
+ 315          
+ 316          int main() {
+ 317   1          int i;
+ 318   1          init();
+ 319   1          while(1) {
+ 320   2              DelayMs(10);
+ 321   2              timeInc();
+ 322   2              
+ 323   2              for(i=0;i<(990/30);++i){
+ 324   3                  checkAllKey();
+ 325   3                  displayTime(*timePtr);
+ 326   3              }
+ 327   2          }
+ 328   1          return 0;
+ 329   1      }
+ 330          
+*** WARNING C294 IN LINE 328 OF time.c: unreachable code
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1705    ----
+   CONSTANT SIZE    =     25    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     47      67
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,302 @@
+C51 COMPILER V9.56.0.0   ALARM                                                             06/02/2018 20:13:33 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE ALARM
+OBJECT MODULE PLACED IN .\Objects\alarm.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE alarm.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ala
+                    -rm.lst) TABS(2) OBJECT(.\Objects\alarm.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          
+   3          // define the port address
+   4          sbit PORT_1_0 = P1 ^ 0;
+   5          sbit PORT_1_1 = P1 ^ 1;
+   6          sbit PORT_1_2 = P1 ^ 2;
+   7          sbit PORT_1_3 = P1 ^ 3;
+   8          sbit PORT_1_4 = P1 ^ 4;
+   9          sbit PORT_1_5 = P1 ^ 5;
+  10          sbit PORT_1_6 = P1 ^ 6;
+  11          sbit PORT_1_7 = P1 ^ 7;
+  12          
+  13          //  digital screen
+  14          unsigned char code table[] = {
+  15              0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07,
+  16              0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71
+  17          };
+  18          
+  19          // wait
+  20          void DelayMs(unsigned long ms) {
+  21   1          unsigned int t;
+  22   1          while (ms--)
+  23   1              for (t = 0; t < 120; t++);
+  24   1      }
+  25          
+  26          void Delay500ms(unsigned int ms) {
+  27   1          while(ms--)
+  28   1              DelayMs(200);
+  29   1      }
+  30          
+  31          // get the status of P1 port.
+  32          bit getStatus(unsigned int num) {
+  33   1          bit ret;
+  34   1          switch(num) {
+  35   2              case 0: ret = PORT_1_0; break;
+  36   2              case 1: ret = PORT_1_1; break;
+  37   2              case 2: ret = PORT_1_2; break;
+  38   2              case 3: ret = PORT_1_3; break;
+  39   2              case 4: ret = PORT_1_4; break;
+  40   2              case 5: ret = PORT_1_5; break;
+  41   2              case 6: ret = PORT_1_6; break;
+  42   2              case 7: ret = PORT_1_7; break;
+  43   2          }
+  44   1          return ret;
+  45   1      }
+  46          
+  47          // set the status of P1 port.
+  48          void setStatus(unsigned int num, bit value){
+  49   1          switch(num){
+  50   2              case 0: PORT_1_0 = value; break;
+  51   2              case 1: PORT_1_1 = value; break;
+  52   2              case 2: PORT_1_2 = value; break;
+  53   2              case 3: PORT_1_3 = value; break;
+  54   2              case 4: PORT_1_4 = value; break;
+C51 COMPILER V9.56.0.0   ALARM                                                             06/02/2018 20:13:33 PAGE 2   
+
+  55   2              case 5: PORT_1_5 = value; break;
+  56   2              case 6: PORT_1_6 = value; break;
+  57   2              case 7: PORT_1_7 = value; break;
+  58   2          }
+  59   1      }
+  60          
+  61          // judge if the key is clicked.
+  62          int keyPressing[8]={0,0,0,0,0,0,0,0};
+  63          int checkKey(unsigned int num) {
+  64   1          int keyDown = 0;
+  65   1          if(getStatus(num) == 1 && keyPressing[num] == 1)
+  66   1              keyPressing[num] = 0;
+  67   1          if(getStatus(num) == 0 && keyPressing[num] == 0) {
+  68   2              DelayMs(10);
+  69   2              if(getStatus(num) == 0) {
+  70   3                  keyDown = 1;
+  71   3                  keyPressing[num] = 1;
+  72   3              }
+  73   2          }
+  74   1          return keyDown;
+  75   1      }
+  76          
+  77          // send data
+  78          void send(unsigned char sendData) {
+  79   1          SBUF = sendData;
+  80   1          while(!TI);
+  81   1          TI = 0;
+  82   1      }
+  83          
+  84          // recive data
+  85          void reciveWorker(unsigned char);
+  86          void reciveListener() interrupt 4 {
+  87   1          RI = 0;
+  88   1          reciveWorker(SBUF);
+  89   1      }
+  90          
+  91          
+  92          /***************/
+  93          
+  94          
+  95          void init(){
+  96   1          P0 = 0x00;
+  97   1          SCON = 0x50;    // communication
+  98   1          TMOD = 0x21;   // timer
+  99   1        
+ 100   1          TH1 = 0xfd;
+ 101   1          TL1 = 0xfd;
+ 102   1        
+ 103   1          TR1 = 1;
+ 104   1          TR0 = 0;
+ 105   1        
+ 106   1          EA = 1;
+ 107   1          ES = 1;
+ 108   1        
+ 109   1          IE = 0xF3;
+ 110   1      }
+ 111          
+ 112          
+ 113          bit ring = 0;
+ 114          bit temp = 0;
+ 115          
+ 116          
+C51 COMPILER V9.56.0.0   ALARM                                                             06/02/2018 20:13:33 PAGE 3   
+
+ 117          
+ 118          unsigned int code Tone[] = {
+ 119              63628,63835,64021,64103,64260,64400,64524,
+ 120              64580,64684,64777,64820,64898,64968,65030,
+ 121              65058,65110,65157,65178,65217,65252,65283
+ 122          };
+ 123          
+ 124          // -1 -2 -3 -4 -5 -6 -7
+ 125          // 0, 1, 2, 3, 4, 5, 6
+ 126          
+ 127          // 1  2  3  4  5  6  7
+ 128          // 7, 8, 9, 10,11,12,13
+ 129          
+ 130          // +1 +2 +3 +4 +5 +6 +7
+ 131          // 14,15,16,17,18,19,20
+ 132          
+ 133          
+ 134          int code melody[3][50] = {
+ 135              {
+ 136                  -1, 
+ 137                  4, 7, 9, 9, 
+ 138                  11, 8, 9, 7, -1, 
+ 139                  7, 7, 6, 5, 5, 
+ 140                  6, 7, 8, 9, 4, -1,
+ 141                  4, 7, 7, 8, 9, 
+ 142                  8, 8, 9, 10, 11, -1,
+ 143                  9, 9, 12, 11, 11,
+ 144                  4, 9, 8, 9, 7,
+ 145                  -1,0xFF
+ 146              },{
+ 147                  -1, 
+ 148                  9,12,14,13,12,16,15,13,12,14,13,11,13,9,9,9,12,14,13,
+ 149                  12,16,18,18,17,15,17,16,15,8,14,12,//12,14,16,14,16,14,
+ 150                  -1,0xFF
+ 151              },{
+ 152                  -1, 
+ 153                  7,8,9,11,9,8,7,
+ 154                  7,9,12,14,13,11,9,8,
+ 155                  -1,0xFF
+ 156              }
+ 157          };
+ 158          unsigned int code tick[3][100] =   {
+ 159              {
+ 160                  1,
+ 161                  1, 1, 2, 4,
+ 162                  2, 4, 2, 4, 2, 
+ 163                  2, 2, 1, 1, 2, 
+ 164                  2, 2, 1, 1, 5, 1,
+ 165                  2, 2, 1, 1, 2, 
+ 166                  2, 2, 1, 1, 5, 1,
+ 167                  2, 2, 1, 1, 2, 
+ 168                  2, 2, 1, 1, 4,
+ 169                  6,0xFF
+ 170              },{
+ 171                  1,
+ 172                  1,2,1,1,2,1,3,3,1,1,1,1,2,1,3,2,1,1,1,1,
+ 173                  2,1,2,1,2,1,1,1,1,2,1,4,//2,1,2,1,2,1,
+ 174                  6,0xFF
+ 175              },{
+ 176                  1,
+ 177                  1,1,2,4,1,1,4,
+ 178                  1,1,2,1,2,1,2,4,
+C51 COMPILER V9.56.0.0   ALARM                                                             06/02/2018 20:13:33 PAGE 4   
+
+ 179                  6,0xFF
+ 180              }
+ 181          };
+ 182          
+ 183          
+ 184          int songPos = 0;
+ 185          int musicIter = 0;
+ 186          
+ 187          sbit BEEP = P1^7;
+ 188          
+ 189          void startMusic(){
+ 190   1          if(ring==0)
+ 191   1              songPos = 0;
+ 192   1          ring = 1;
+ 193   1      }
+ 194          
+ 195          void stopMusic(){
+ 196   1          ring = 0;
+ 197   1          songPos = 0;
+ 198   1          setStatus(0,1);
+ 199   1      }
+ 200          
+ 201          void playMusic() interrupt 1 { 
+ 202   1          if(melody[musicIter][songPos] != -1){
+ 203   2              TH0 = Tone[melody[musicIter][songPos]] / 256;
+ 204   2              TL0 = Tone[melody[musicIter][songPos]] % 256;
+ 205   2              BEEP = ~BEEP;
+ 206   2          }
+ 207   1      }
+ 208          
+ 209          void itstopMusic() interrupt 0 { 
+ 210   1          if(getStatus(1) == 0){
+ 211   2              stopMusic();
+ 212   2          }
+ 213   1          if(getStatus(2) == 0){
+ 214   2              startMusic();
+ 215   2          }
+ 216   1          if(getStatus(3) == 0){
+ 217   2              while(~getStatus(3));
+ 218   2              musicIter = (musicIter-1+3)%3;
+ 219   2              songPos = 0;
+ 220   2          }
+ 221   1          if(getStatus(4) == 0){
+ 222   2              while(~getStatus(4));
+ 223   2              musicIter = (musicIter+1)%3;
+ 224   2              songPos = 0;
+ 225   2          }
+ 226   1      }
+ 227          
+ 228          
+ 229          
+ 230          // solve the recive data
+ 231          void reciveWorker(unsigned char reciveData) {
+ 232   1        if (reciveData == 1) {
+ 233   2             startMusic();
+ 234   2        }
+ 235   1      }
+ 236          
+ 237          
+ 238          
+ 239          void makeSong(){
+ 240   1          if (melody[musicIter][songPos] == 0xFF) {
+C51 COMPILER V9.56.0.0   ALARM                                                             06/02/2018 20:13:33 PAGE 5   
+
+ 241   2              songPos = 0;
+ 242   2          }
+ 243   1          TR0 = 1;
+ 244   1          Delay500ms(tick[musicIter][songPos]);
+ 245   1          TR0 = 0;
+ 246   1          //BEEP = 0;
+ 247   1          songPos++;
+ 248   1      }
+ 249          
+ 250          
+ 251          
+ 252          
+ 253          void doWork(){
+ 254   1          setStatus(0,~ring);
+ 255   1          P0 = table[musicIter];
+ 256   1          if(ring) {
+ 257   2              makeSong();
+ 258   2          }
+ 259   1      }
+ 260          
+ 261          int main() {
+ 262   1          init();
+ 263   1          while(1) {
+ 264   2              //DelayMs(50);
+ 265   2              doWork();
+ 266   2          }
+ 267   1          return 0;
+ 268   1      }
+ 269          
+*** WARNING C294 IN LINE 267 OF alarm.c: unreachable code
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    919    ----
+   CONSTANT SIZE    =    958    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2       2
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

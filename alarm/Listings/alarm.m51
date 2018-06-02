@@ -1,0 +1,417 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        06/02/2018  20:13:34  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\alarm.obj TO .\Objects\alarm PRINT (.\Listings\alarm.m51)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\alarm.obj (ALARM)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?SIDIV)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?LLDIIDATA)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?OFFXADD)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?UIDIV)
+
+
+LINK MAP OF MODULE:  .\Objects\alarm (ALARM)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0014H     UNIT         ?DT?ALARM
+            DATA    001CH     0004H     UNIT         ?DT?_CHECKKEY?ALARM
+            BIT     0020H.0   0000H.2   UNIT         ?BI?ALARM
+            BIT     0020H.2   0000H.2   UNIT         _BIT_GROUP_
+                    0020H.4   0000H.4                *** GAP ***
+            DATA    0021H     0004H     UNIT         _DATA_GROUP_
+            IDATA   0025H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0003H     ABSOLUTE     
+                    0006H     0005H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+                    000EH     0015H                  *** GAP ***
+            CODE    0023H     0003H     ABSOLUTE     
+                    0026H     07DAH                  *** GAP ***
+            CODE    0800H     03BEH     UNIT         ?CO?ALARM
+            CODE    0BBEH     00B7H     UNIT         ?C?LIB_CODE
+            CODE    0C75H     009EH     UNIT         ?PR?ITSTOPMUSIC?ALARM
+            CODE    0D13H     008CH     UNIT         ?C_C51STARTUP
+            CODE    0D9FH     007FH     UNIT         ?PR?PLAYMUSIC?ALARM
+            CODE    0E1EH     0075H     UNIT         ?PR?MAKESONG?ALARM
+            CODE    0E93H     0068H     UNIT         ?PR?_CHECKKEY?ALARM
+            CODE    0EFBH     0059H     UNIT         ?PR?_GETSTATUS?ALARM
+            CODE    0F54H     0050H     UNIT         ?PR?_SETSTATUS?ALARM
+            CODE    0FA4H     003FH     UNIT         ?PR?RECIVELISTENER?ALARM
+            CODE    0FE3H     0029H     UNIT         ?PR?_DELAYMS?ALARM
+            CODE    100CH     0022H     UNIT         ?PR?DOWORK?ALARM
+            CODE    102EH     001FH     UNIT         ?PR?_DELAY500MS?ALARM
+            CODE    104DH     001FH     UNIT         ?C_INITSEG
+            CODE    106CH     001BH     UNIT         ?PR?INIT?ALARM
+            CODE    1087H     000EH     UNIT         ?PR?STOPMUSIC?ALARM
+            CODE    1095H     000BH     UNIT         ?PR?STARTMUSIC?ALARM
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 2
+
+
+            CODE    10A0H     0008H     UNIT         ?PR?_SEND?ALARM
+            CODE    10A8H     0008H     UNIT         ?PR?MAIN?ALARM
+            CODE    10B0H     0007H     UNIT         ?PR?_RECIVEWORKER?ALARM
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\alarm (ALARM)
+
+
+SEGMENT                             BIT_GROUP          DATA_GROUP 
+  +--> CALLED SEGMENT            START    LENGTH     START    LENGTH
+--------------------------------------------------------------------
+?PR?RECIVELISTENER?ALARM         -----    -----      -----    -----
+  +--> ?PR?_RECIVEWORKER?ALARM
+
+?PR?_RECIVEWORKER?ALARM          -----    -----      -----    -----
+  +--> ?PR?STARTMUSIC?ALARM
+
+*** NEW ROOT ***************************************************
+
+?PR?PLAYMUSIC?ALARM              -----    -----      -----    -----
+  +--> ?CO?ALARM
+
+*** NEW ROOT ***************************************************
+
+?PR?ITSTOPMUSIC?ALARM            -----    -----      -----    -----
+  +--> ?PR?_GETSTATUS?ALARM
+  +--> ?PR?STOPMUSIC?ALARM
+  +--> ?PR?STARTMUSIC?ALARM
+
+?PR?_GETSTATUS?ALARM             0020H.2  0000H.1    -----    -----
+
+?PR?STOPMUSIC?ALARM              -----    -----      -----    -----
+  +--> ?PR?_SETSTATUS?ALARM
+
+?PR?_SETSTATUS?ALARM             0020H.3  0000H.1    -----    -----
+
+*** NEW ROOT ***************************************************
+
+?C_C51STARTUP                    -----    -----      -----    -----
+  +--> ?PR?MAIN?ALARM
+  +--> ?C_INITSEG
+
+?PR?MAIN?ALARM                   -----    -----      -----    -----
+  +--> ?PR?INIT?ALARM
+  +--> ?PR?DOWORK?ALARM
+
+?PR?DOWORK?ALARM                 -----    -----      -----    -----
+  +--> ?PR?_SETSTATUS?ALARM
+  +--> ?CO?ALARM
+  +--> ?PR?MAKESONG?ALARM
+
+?PR?MAKESONG?ALARM               -----    -----      -----    -----
+  +--> ?CO?ALARM
+  +--> ?PR?_DELAY500MS?ALARM
+
+?PR?_DELAY500MS?ALARM            -----    -----      -----    -----
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 3
+
+
+  +--> ?PR?_DELAYMS?ALARM
+
+?PR?_DELAYMS?ALARM               -----    -----      0021H    0004H
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\alarm (ALARM)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ALARM
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  C:10B0H         PUBLIC        _reciveWorker
+  D:0090H         PUBLIC        P1
+  D:00B0H         PUBLIC        P3
+  B:00A8H.7       PUBLIC        EA
+  C:0800H         PUBLIC        table
+  C:083AH         PUBLIC        melody
+  D:00A8H         PUBLIC        IE
+  C:0810H         PUBLIC        Tone
+  B:00A8H.4       PUBLIC        ES
+  D:00B8H         PUBLIC        IP
+  B:0098H.0       PUBLIC        RI
+  D:0008H         PUBLIC        keyPressing
+  B:0090H.7       PUBLIC        BEEP
+  B:0098H.1       PUBLIC        TI
+  C:10A8H         PUBLIC        main
+  C:0C75H         PUBLIC        itstopMusic
+  C:10A0H         PUBLIC        _send
+  C:0E93H         PUBLIC        _checkKey
+  C:0966H         PUBLIC        tick
+  D:0099H         PUBLIC        SBUF
+  B:0020H.0       PUBLIC        ring
+  C:0FE3H         PUBLIC        _DelayMs
+  D:0098H         PUBLIC        SCON
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  C:1095H         PUBLIC        startMusic
+  C:106CH         PUBLIC        init
+  B:0020H.1       PUBLIC        temp
+  C:0E1EH         PUBLIC        makeSong
+  D:0018H         PUBLIC        musicIter
+  C:0D9FH         PUBLIC        playMusic
+  C:0EFBH         PUBLIC        _getStatus
+  D:008CH         PUBLIC        TH0
+  C:1087H         PUBLIC        stopMusic
+  D:008DH         PUBLIC        TH1
+  C:0FA4H         PUBLIC        reciveListener
+  D:008AH         PUBLIC        TL0
+  D:008BH         PUBLIC        TL1
+  C:0F54H         PUBLIC        _setStatus
+  B:0088H.4       PUBLIC        TR0
+  B:0088H.6       PUBLIC        TR1
+  B:0090H.0       PUBLIC        PORT_1_0
+  D:00C8H         PUBLIC        T2CON
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 4
+
+
+  B:0090H.1       PUBLIC        PORT_1_1
+  C:102EH         PUBLIC        _Delay500ms
+  B:0090H.2       PUBLIC        PORT_1_2
+  B:0090H.3       PUBLIC        PORT_1_3
+  B:0090H.4       PUBLIC        PORT_1_4
+  B:0090H.5       PUBLIC        PORT_1_5
+  D:001AH         PUBLIC        songPos
+  B:0090H.6       PUBLIC        PORT_1_6
+  B:0090H.7       PUBLIC        PORT_1_7
+  C:100CH         PUBLIC        doWork
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          _DELAYMS
+  D:0021H         SYMBOL        ms
+  -------         DO            
+  D:0002H         SYMBOL        t
+  -------         ENDDO         
+  C:0FE3H         LINE#         20
+  C:0FEBH         LINE#         22
+  C:0FF8H         LINE#         23
+  C:100BH         LINE#         24
+  -------         ENDPROC       _DELAYMS
+  -------         PROC          _DELAY500MS
+  D:0082H         SYMBOL        ms
+  C:102EH         LINE#         26
+  C:1032H         LINE#         27
+  C:103FH         LINE#         28
+  C:104CH         LINE#         29
+  -------         ENDPROC       _DELAY500MS
+  -------         PROC          _GETSTATUS
+  D:0006H         SYMBOL        num
+  -------         DO            
+  B:0020H.2       SYMBOL        ret
+  -------         ENDDO         
+  C:0EFBH         LINE#         32
+  C:0EFBH         LINE#         34
+  C:0F23H         LINE#         35
+  C:0F29H         LINE#         36
+  C:0F2FH         LINE#         37
+  C:0F35H         LINE#         38
+  C:0F3BH         LINE#         39
+  C:0F41H         LINE#         40
+  C:0F47H         LINE#         41
+  C:0F4DH         LINE#         42
+  C:0F51H         LINE#         43
+  C:0F51H         LINE#         44
+  C:0F53H         LINE#         45
+  -------         ENDPROC       _GETSTATUS
+  -------         PROC          _SETSTATUS
+  D:0006H         SYMBOL        num
+  B:0020H.3       SYMBOL        value
+  C:0F54H         LINE#         48
+  C:0F54H         LINE#         49
+  C:0F7CH         LINE#         50
+  C:0F81H         LINE#         51
+  C:0F86H         LINE#         52
+  C:0F8BH         LINE#         53
+  C:0F90H         LINE#         54
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 5
+
+
+  C:0F95H         LINE#         55
+  C:0F9AH         LINE#         56
+  C:0F9FH         LINE#         57
+  C:0FA3H         LINE#         58
+  C:0FA3H         LINE#         59
+  -------         ENDPROC       _SETSTATUS
+  -------         PROC          _CHECKKEY
+  D:001CH         SYMBOL        num
+  -------         DO            
+  D:001EH         SYMBOL        keyDown
+  -------         ENDDO         
+  C:0E93H         LINE#         63
+  C:0E97H         LINE#         64
+  C:0E9CH         LINE#         65
+  C:0EB2H         LINE#         66
+  C:0EBCH         LINE#         67
+  C:0ED3H         LINE#         68
+  C:0EDBH         LINE#         69
+  C:0EE4H         LINE#         70
+  C:0EEAH         LINE#         71
+  C:0EF6H         LINE#         72
+  C:0EF6H         LINE#         73
+  C:0EF6H         LINE#         74
+  C:0EFAH         LINE#         75
+  -------         ENDPROC       _CHECKKEY
+  -------         PROC          _SEND
+  D:0007H         SYMBOL        sendData
+  C:10A0H         LINE#         78
+  C:10A0H         LINE#         79
+  C:10A2H         LINE#         80
+  C:10A5H         LINE#         81
+  C:10A7H         LINE#         82
+  -------         ENDPROC       _SEND
+  -------         PROC          RECIVELISTENER
+  C:0FA4H         LINE#         86
+  C:0FC1H         LINE#         87
+  C:0FC3H         LINE#         88
+  C:0FC8H         LINE#         89
+  -------         ENDPROC       RECIVELISTENER
+  -------         PROC          INIT
+  C:106CH         LINE#         95
+  C:106CH         LINE#         96
+  C:106FH         LINE#         97
+  C:1072H         LINE#         98
+  C:1075H         LINE#         100
+  C:1078H         LINE#         101
+  C:107BH         LINE#         103
+  C:107DH         LINE#         104
+  C:107FH         LINE#         106
+  C:1081H         LINE#         107
+  C:1083H         LINE#         109
+  C:1086H         LINE#         110
+  -------         ENDPROC       INIT
+  -------         PROC          STARTMUSIC
+  C:1095H         LINE#         189
+  C:1095H         LINE#         190
+  C:1098H         LINE#         191
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 6
+
+
+  C:109DH         LINE#         192
+  C:109FH         LINE#         193
+  -------         ENDPROC       STARTMUSIC
+  -------         PROC          STOPMUSIC
+  C:1087H         LINE#         195
+  C:1087H         LINE#         196
+  C:1089H         LINE#         197
+  C:108EH         LINE#         198
+  -------         ENDPROC       STOPMUSIC
+  -------         PROC          PLAYMUSIC
+  C:0D9FH         LINE#         201
+  C:0DB4H         LINE#         202
+  C:0DEAH         LINE#         203
+  C:0E05H         LINE#         204
+  C:0E09H         LINE#         205
+  C:0E0BH         LINE#         206
+  C:0E0BH         LINE#         207
+  -------         ENDPROC       PLAYMUSIC
+  -------         PROC          ITSTOPMUSIC
+  C:0C75H         LINE#         209
+  C:0C8CH         LINE#         210
+  C:0C95H         LINE#         211
+  C:0C98H         LINE#         212
+  C:0C98H         LINE#         213
+  C:0CA1H         LINE#         214
+  C:0CA4H         LINE#         215
+  C:0CA4H         LINE#         216
+  C:0CADH         LINE#         217
+  C:0CB7H         LINE#         218
+  C:0CCBH         LINE#         219
+  C:0CD1H         LINE#         220
+  C:0CD1H         LINE#         221
+  C:0CDAH         LINE#         222
+  C:0CE4H         LINE#         223
+  C:0CF8H         LINE#         224
+  C:0CFEH         LINE#         225
+  C:0CFEH         LINE#         226
+  -------         ENDPROC       ITSTOPMUSIC
+  -------         PROC          _RECIVEWORKER
+  D:0007H         SYMBOL        reciveData
+  C:10B0H         LINE#         231
+  C:10B0H         LINE#         232
+  C:10B3H         LINE#         233
+  C:10B6H         LINE#         234
+  C:10B6H         LINE#         235
+  -------         ENDPROC       _RECIVEWORKER
+  -------         PROC          MAKESONG
+  C:0E1EH         LINE#         239
+  C:0E1EH         LINE#         240
+  C:0E50H         LINE#         241
+  C:0E54H         LINE#         242
+  C:0E54H         LINE#         243
+  C:0E56H         LINE#         244
+  C:0E88H         LINE#         245
+  C:0E8AH         LINE#         247
+  C:0E92H         LINE#         248
+  -------         ENDPROC       MAKESONG
+BL51 BANKED LINKER/LOCATER V6.22                                                      06/02/2018  20:13:34  PAGE 7
+
+
+  -------         PROC          DOWORK
+  C:100CH         LINE#         253
+  C:100CH         LINE#         254
+  C:1017H         LINE#         255
+  C:1027H         LINE#         256
+  C:102AH         LINE#         257
+  C:102DH         LINE#         258
+  C:102DH         LINE#         259
+  -------         ENDPROC       DOWORK
+  -------         PROC          MAIN
+  C:10A8H         LINE#         261
+  C:10A8H         LINE#         262
+  C:10ABH         LINE#         263
+  C:10ABH         LINE#         265
+  C:10AEH         LINE#         266
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        ALARM
+
+  -------         MODULE        ?C?SIDIV
+  C:0BBEH         PUBLIC        ?C?SIDIV
+  -------         ENDMOD        ?C?SIDIV
+
+  -------         MODULE        ?C?LLDIIDATA
+  C:0BFDH         PUBLIC        ?C?LLDIIDATA
+  C:0BF4H         PUBLIC        ?C?LLDIIDATA1
+  C:0BF6H         PUBLIC        ?C?LLDIIDATA8
+  -------         ENDMOD        ?C?LLDIIDATA
+
+  -------         MODULE        ?C?OFFXADD
+  C:0C14H         PUBLIC        ?C?OFFXADD
+  -------         ENDMOD        ?C?OFFXADD
+
+  -------         MODULE        ?C?UIDIV
+  C:0C20H         PUBLIC        ?C?UIDIV
+  -------         ENDMOD        ?C?UIDIV
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_CHECKKEY?ALARM
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_SEND?ALARM
+
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?_SETSTATUS?ALARM
+    CALLER1: ?PR?ITSTOPMUSIC?ALARM
+    CALLER2: ?C_C51STARTUP
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 077CH BYTE (93%) *
+******************************************************************************
+
+Program Size: data=37.4 xdata=0 code=2243
+LINK/LOCATE RUN COMPLETE.  3 WARNING(S),  0 ERROR(S)
